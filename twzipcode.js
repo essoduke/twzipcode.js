@@ -1,5 +1,5 @@
 /**
- * TWzipcode v3.0 (https://code.essoduke.org/twzipcode)
+ * TWzipcode v3.1 (https://code.essoduke.org/twzipcode)
  * @license MIT
  */
 (function (factory) {
@@ -324,7 +324,7 @@
      */
     return class TWzipcode {
 
-        version = '3.0';
+        version = '3.1';
 
         database;
         options;
@@ -414,7 +414,7 @@
             // County
             this.container.forEach((elem) => {
 
-                let {c, d, z, a} = this.createEmelents(elem);
+                let {c, d, z, a} = this.createElements(elem);
                 let id = Math.random().toString(36).substring(2, 10), h = [];
 
                 elem.dataset.id = id;
@@ -425,7 +425,7 @@
                         a.dataset.id = `address-${id}`;
                     }
 
-                    let defaultDistrictOption = `<option value="">${'label' in d.dataset ? d.dataset.label : this.options.district.label}</option>`;
+                    let defaultDistrictOption = `<option value="">${d.dataset?.label ?? this.options.district.label}</option>`;
 
                     // push to instance
                     this.instance[id] = {
@@ -436,7 +436,7 @@
                         'address': a
                     };
 
-                    let label = 'label' in c.dataset ? c.dataset.label : this.options.county.label;
+                    let label = c.dataset?.label ?? this.options.county.label;
                     const had = c.dataset.hasOwnProperty('loaded') && Boolean(c.dataset.loaded);
 
                     h.push(`<option value="">${label}</option>`);
@@ -465,7 +465,7 @@
          * @param  {HTMLElement}  elem  Container
          * @return {Object}
          */
-        createEmelents (elem) {
+        createElements (elem) {
 
             const query = () => {
                 return {
@@ -541,7 +541,7 @@
                     };
                     this.district.innerHTML = h.join('');
                 } else {
-                    let label = 'label' in this.district.dataset ? this.district.dataset.label : districtLabel;
+                    let label = this.district.dataset?.label ?? districtLabel;
                     this.district.innerHTML = `<option value="">${label}</option>`;
                 }
 
@@ -603,7 +603,7 @@
 
                 let interval;
 
-                if (Helper.isObject(find) && 'county' in find && 'district' in find && 'zipcode' in find) {
+                if (Helper.isObject(find) && find?.county && find?.district && find?.zipcode) {
                     const wait = function (ms = 10) {
                         return new Promise((resolve, reject) => {
                             window.setTimeout(resolve, ms);
@@ -667,17 +667,19 @@
         trigger () {
             for (let obj of Object.values(this.instance)) {
                 if (Helper.isDOM(obj.zipcode)) {
-                    if ('value' in obj.zipcode.dataset) {
+                    if (obj.zipcode.dataset?.value) {
                         this.zipcode(obj.zipcode.dataset.value);
                         break;
                     }
                 }
                 if (Helper.isDOM(obj.county, obj.district)) {
-                    if ('value' in obj.county.dataset) {
-                        this.county(obj.county.dataset.value);
+                    const cval = obj?.county?.dataset?.value || this.options?.county?.value;
+                    const dval = obj?.district?.dataset?.value || this.options?.district?.value;
+                    if (cval) {
+                        this.county(cval);
                     }
-                    if ('value' in obj.district.dataset) {
-                        this.district(obj.district.dataset.value);
+                    if (dval) {
+                        this.district(dval);
                     }
                 }
             }
@@ -780,21 +782,21 @@
             }
 
             Object.values(instance).forEach((m) => {
-                if ('county' in props && Helper.isString(props.county)) {
+                if (Helper.isString(props?.county)) {
                     wait().then(() => {
                         m.county.value = Helper.transfer(props.county);
                         trigger(m.county, 'change');
                         return wait();
                     });
                 }
-                if ('district' in props && Helper.isString(props.district)) {
+                if (Helper.isString(props?.district)) {
                     wait().then(() => {
-                        m.district.value = Helper.transfer(props.district);
+                        m.district.value = Helper.transfer(props?.district);
                         trigger(m.district, 'change');
                         return wait();
                     });
                 }
-                if ('zipcode' in props && Helper.isNumeric(props.zipcode)) {
+                if (Helper.isNumeric(props?.zipcode)) {
                     wait().then(() => {
                         m.zipcode.value = props.zipcode;
                         trigger(m.zipcode, 'keyup');
@@ -895,7 +897,7 @@
             if (Helper.isset(this.fetch)) {
                 Object.keys(this.fetch).forEach(m => {
                     const o = this.fetch[m];
-                    if (o.hasOwnProperty('parent') && 'id' in o.parent.dataset) {
+                    if (o.hasOwnProperty('parent') && o.parent.dataset?.id) {
                         const id = o.parent.dataset.id;
                         if (Helper.isset(this.instance[id])) {
                             o.parent.innerHTML = '';
@@ -906,7 +908,7 @@
             } else {
                 Object.keys(this.instance).forEach(m => {
                     const o = this.instance[m];
-                    if (o.hasOwnProperty('parent') && 'id' in o.parent.dataset) {
+                    if (o.hasOwnProperty('parent') && o.parent.dataset?.id) {
                         o.parent.innerHTML = '';
                     }
                 });
